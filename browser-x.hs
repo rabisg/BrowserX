@@ -1,7 +1,12 @@
+import System.Environment
+import Network.Browser
 import Network.HTTP
  
  -- | 'main' runs the main program
 main = do
-    a <- simpleHTTP(getRequest "http://www.haskell.org/")
-    b <- getResponseBody a
-    print b
+    urls <- getArgs
+    (_,rsp) <- browse $ do
+        setAllowRedirects True
+        setProxy NoProxy
+        request $ getRequest $ head urls
+    print $ rspBody rsp
