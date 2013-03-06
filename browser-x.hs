@@ -98,4 +98,4 @@ checkProtocol :: String -> String
 checkProtocol url = 
     case (parseURI url) of
         Nothing     -> "http://" ++ url
-        Just uri    -> url 
+        Just uri    -> if (uriScheme uri == "http:") then url else "http://google.com"
