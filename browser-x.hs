@@ -1,5 +1,6 @@
 import Network.Browser
 import Network.HTTP
+import Network.URI
 
 import Graphics.UI.Gtk
 import Graphics.UI.Gtk.WebKit.WebView
@@ -44,22 +45,25 @@ browser url = do
     
     -- Load uri.
     do
-        content <- fetchURL url      
-        webViewLoadHtmlString webView content url
+        let furl = checkProtocol url
+        content <- fetchURL furl      
+        webViewLoadHtmlString webView content furl
         
     entrySetText addressBar url
     
     -- Open uri when user press `return` at address bar.
     onEntryActivate addressBar $ do
         uri <- entryGetText addressBar               -- get uri from address bar
-        content <- fetchURL uri
-        webViewLoadHtmlString webView content uri    -- load new uri
+        let furi = checkProtocol uri
+        content <- fetchURL furi
+        webViewLoadHtmlString webView content furi    -- load new uri
         
     -- Add current uri to address bar when load start.
     webView `on` loadStarted $ \frame -> do
         currentUri <- webFrameGetUri frame
         case currentUri of
-            Just uri -> entrySetText addressBar uri
+            Just uri -> let furi = checkProtocol uri in
+                        entrySetText addressBar furi
             Nothing  -> return ()
 
     -- Open all link in current window.
@@ -67,8 +71,9 @@ browser url = do
         newUri <- webFrameGetUri frame
         case newUri of
             Just uri -> do
-                content <- fetchURL uri
-                webViewLoadHtmlString webView content uri
+                let furi = checkProtocol uri
+                content <- fetchURL furi
+                webViewLoadHtmlString webView content furi
             Nothing  -> return ()
         return webView        
 
@@ -88,3 +93,9 @@ fetchURL url = do
         setAllowRedirects True
         request $ getRequest url
     return(rspBody rsp)
+
+checkProtocol :: String -> String
+checkProtocol url = 
+    case (parseURI url) of
+        Nothing     -> "http://" ++ url
+        Just uri    -> url 
