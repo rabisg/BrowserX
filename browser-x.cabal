@@ -17,4 +17,4 @@ cabal-version:       >=1.8
 executable browser-x
   main-is:             browser-x.hs             
   -- other-modules:       
-  build-depends:       base ==4.5.*, HTTP, gtk, webkit, process
+  build-depends:       base ==4.5.*, network, HTTP, gtk, webkit, process
