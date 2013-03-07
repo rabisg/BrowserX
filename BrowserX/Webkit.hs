@@ -1,38 +1,10 @@
-#!/usr/bin/env runhaskell
-
-{-# LANGUAGE TemplateHaskell #-}
-
-import Network.Browser
-import Network.HTTP
+module BrowserX.Webkit (browser) where
 
 import Graphics.UI.Gtk
 import Graphics.UI.Gtk.WebKit.WebView
 import Graphics.UI.Gtk.WebKit.WebFrame
 
-import System.Process
-import System.Environment
-import System.Exit
-
-import Control.Monad
-
-import HFlags
- 
- -- Defining Flags
-defineFlag "h:help" False "Prints the help text"
-defineFlag "d:debug" False "Renders output on the terminal (No Webkit)"
-
- -- | 'main' runs the main program
-main :: IO ()
-main = do
-    _ <- $(initHFlags "Browser-X version: 0.1")
-    when (flags_help) $ exitSuccess
-    if flags_debug == True 
-        then console "http://www.google.com" >>= putStrLn
-        else browser "http://www.google.com"
-
---
-console :: String -> IO String
-console url = fetchURL url
+import BrowserX.Network
 
 -- | Internal browser fucntion.
 browser url = do
@@ -93,10 +65,3 @@ browser url = do
     widgetShowAll window
 
     mainGUI
-
-fetchURL :: String -> IO String
-fetchURL url = do
-    (_,rsp) <- browse $ do
-        setAllowRedirects True
-        request $ getRequest url
-    return(rspBody rsp)
