@@ -17,12 +17,7 @@ data PrintOptions =
   Header
   | Body
   | Both
-
-instance Show PrintOptions where
-  show p = case p of
-    Header -> "Header"
-    Body   -> "Body"
-    _      -> "Both"
+  deriving Show
 
 instance Show Authority where
   show a = case a of 
