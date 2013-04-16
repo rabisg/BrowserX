@@ -27,10 +27,10 @@ checkProtocol url =
                 error (scheme ++ "Protocol not supported")
             where scheme = uriScheme uri
             
-downloadfile url = withManager $ \manager -> do
+downloadfile url path = withManager $ \manager -> do
     req <- parseUrl url
     res <- http req manager
-    responseBody res $$+- printProgress =$ CB.sinkFile (fileName url)
+    responseBody res $$+- printProgress =$ CB.sinkFile path
 
 printProgress :: Conduit S.ByteString (ResourceT IO) S.ByteString
 printProgress =
@@ -41,7 +41,4 @@ printProgress =
         liftIO $ putStrLn $ "Bytes consumed: " ++ show len'
         yield bs
         loop len')
-        
-fileName :: String -> String
-fileName path = last (splitOn "/" path)
 

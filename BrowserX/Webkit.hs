@@ -126,8 +126,10 @@ savedialog = do
      widgetShow fchdal
      response <- dialogRun fchdal
      case response of
+          ResponseCancel -> putStrLn "You cancelled."
           ResponseAccept -> do nwf <- fileChooserGetFilename fchdal
                                case nwf of
                                     Nothing -> putStrLn "Nothing"
-                                    Just path -> putStrLn ("New file path is:\n" ++ path)
+                                    Just path -> downloadfile "http://www.haskell.org/tutorial/haskell-98-tutorial.pdf" path
+          ResponseDeleteEvent -> putStrLn "You closed the dialog window."
      widgetDestroy fchdal
