@@ -24,6 +24,11 @@ instance Show Authority where
     AuthBasic{} -> "(Basic Auth:: Username: " ++ auUsername a ++ "  Password: " ++auPassword a ++ ")"
     _ -> "Digest Auth"
 
+instance Show Proxy where
+  show p = case p of
+    NoProxy -> "No Proxy"
+    _ -> "Proxy"
+
 {--
   Not converting the proxy string into Proxy
   because of wide variety of type of results 
@@ -34,7 +39,7 @@ data Options = Options
   { optShowVersion :: Bool
   , optShowHelp    :: Bool
   , optAuth        :: Maybe Authority
-  , optProxy       :: Maybe String
+  , optProxy       :: Proxy
   , optPrint       :: PrintOptions
   , optDebug       :: Bool
   } deriving Show
@@ -43,7 +48,7 @@ defaultOptions     = Options
   { optShowVersion = False
   , optShowHelp    = False
   , optAuth        = Nothing
-  , optProxy       = Nothing
+  , optProxy       = NoProxy
   , optPrint       = Both
   , optDebug       = False
   }
@@ -62,7 +67,7 @@ options =
       "username:password")
      "HTTP Basic Authentication"
  , Option []      ["proxy"]
-     (ReqArg (\ f opts -> opts { optProxy = Just f } ) "http://example.com:80 | none | AUTO")
+     (ReqArg (\ f opts -> opts { optProxy = Proxy f (optAuth opts)} ) "http://example.com:80")
      "Proxy"
  , Option "p"     ["print"]
      (ReqArg (\ f opts -> case head f of

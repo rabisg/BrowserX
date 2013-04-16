@@ -19,13 +19,13 @@ main = do
   putStrLn $ show settings
   putStrLn $ show params
   url <- case params of
-  	[] -> return "http://haskell.org"
+  	[] -> return "http://google.com"
   	(x:xs) -> return x
-  when (optDebug settings) $ console url
-  unless (optDebug settings) $ browser url
+  when (optDebug settings) $ console settings url
+  unless (optDebug settings) $ browser settings url
 
-console :: String -> IO ()
-console url = do
-	html <- fetchURL url
+console :: Options -> String -> IO ()
+console settings url = do
+	html <- fetchURL settings url
 	putStrLn html
 

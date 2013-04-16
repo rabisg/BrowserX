@@ -9,7 +9,7 @@ import Network.URI
 import BrowserX.Network
 
 -- | Internal browser fucntion.
-browser url = do
+browser settings url = do
     initGUI
     window <- windowNew
     set window [windowTitle := "Browser-X"]
@@ -56,7 +56,7 @@ browser url = do
     -- Load uri.
     do
         let furl = checkProtocol url
-        content <- fetchURL furl      
+        content <- fetchURL settings furl      
         webViewLoadHtmlString webView content furl
         
     entrySetText addressBar url
@@ -65,7 +65,7 @@ browser url = do
     onEntryActivate addressBar $ do
         uri <- entryGetText addressBar               -- get uri from address bar
         let furi = checkProtocol uri
-        content <- fetchURL furi
+        content <- fetchURL settings furi
         webViewLoadHtmlString webView content furi    -- load new uri
         
     -- Add current uri to address bar when load start.
@@ -82,7 +82,7 @@ browser url = do
         case newUri of
             Just uri -> do
                 let furi = checkProtocol uri
-                content <- fetchURL furi
+                content <- fetchURL settings furi
                 webViewLoadHtmlString webView content furi
             Nothing  -> return ()
         return webView        
