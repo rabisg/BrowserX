@@ -30,10 +30,11 @@ browser url = do
     back <- actionNew "BACK" "Back" (Just "") (Just stockGoBack)
     forw <- actionNew "FORW" "Forward" (Just "") (Just stockGoForward)
     relo <- actionNew "RELO" "Reload" (Just "") (Just stockRedo)
+    save <- actionNew "SAVE" "Save" (Just "") (Just stockSave)
     exit <- actionNew "EXIT" "Exit" (Just "") (Just stockQuit)
 
     agr <- actionGroupNew "AGR"
-    mapM_ (\act -> actionGroupAddActionWithAccel agr act Nothing)[home,back,forw,relo,exit]
+    mapM_ (\act -> actionGroupAddActionWithAccel agr act Nothing)[home,back,forw,relo,save,exit]
 
     ui <- uiManagerNew
     uiManagerAddUiFromString ui uiDecl
@@ -49,6 +50,7 @@ browser url = do
     onActionActivate back (webViewGoBack webView)
     onActionActivate forw (webViewGoForward webView)
     onActionActivate relo (webViewReload webView)
+    onActionActivate save (savedialog)
 
     -- Create scroll window.
     scrollWin <- scrolledWindowNew Nothing Nothing
@@ -108,6 +110,24 @@ uiDecl=  "<ui>\
 \            <separator />\
 \            <toolitem action=\"RELO\" />\
 \            <separator />\
+\            <toolitem action=\"SAVE\" />\
+\            <separator />\
 \            <toolitem action=\"EXIT\" />\
 \           </toolbar>\
 \          </ui>"
+
+savedialog = do
+     fchdal <- fileChooserDialogNew (Just "Save As..") Nothing
+                                     FileChooserActionSave
+                                     [("Cancel", ResponseCancel),
+                                      ("Save", ResponseAccept)]
+ 
+     fileChooserSetDoOverwriteConfirmation fchdal True
+     widgetShow fchdal
+     response <- dialogRun fchdal
+     case response of
+          ResponseAccept -> do nwf <- fileChooserGetFilename fchdal
+                               case nwf of
+                                    Nothing -> putStrLn "Nothing"
+                                    Just path -> putStrLn ("New file path is:\n" ++ path)
+     widgetDestroy fchdal
