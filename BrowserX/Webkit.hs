@@ -50,7 +50,7 @@ browser url = do
     onActionActivate back (webViewGoBack webView)
     onActionActivate forw (webViewGoForward webView)
     onActionActivate relo (webViewReload webView)
-    onActionActivate save (savedialog)
+    onActionActivate save (savedialog addressBar)
 
     -- Create scroll window.
     scrollWin <- scrolledWindowNew Nothing Nothing
@@ -116,7 +116,8 @@ uiDecl=  "<ui>\
 \           </toolbar>\
 \          </ui>"
 
-savedialog = do
+savedialog addressBar = do
+     url <- entryGetText addressBar
      fchdal <- fileChooserDialogNew (Just "Save As..") Nothing
                                      FileChooserActionSave
                                      [("Cancel", ResponseCancel),
@@ -130,6 +131,6 @@ savedialog = do
           ResponseAccept -> do nwf <- fileChooserGetFilename fchdal
                                case nwf of
                                     Nothing -> putStrLn "Nothing"
-                                    Just path -> downloadfile "http://www.haskell.org/tutorial/haskell-98-tutorial.pdf" path
+                                    Just path -> downloadfile url path
           ResponseDeleteEvent -> putStrLn "You closed the dialog window."
      widgetDestroy fchdal
