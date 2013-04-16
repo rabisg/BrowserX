@@ -1,27 +1,10 @@
-import Network.Browser
-import Network.HTTP
-import Network.URI
+module BrowserX.Webkit (browser) where
 
 import Graphics.UI.Gtk
 import Graphics.UI.Gtk.WebKit.WebView
 import Graphics.UI.Gtk.WebKit.WebFrame
 
-import System.Process
-import System.Environment
- 
- -- | 'main' runs the main program
-main :: IO ()
-main = do
-    -- Get program arguments.
-    args <- getArgs
-    case args of
-        -- Display help
-        ["--help"] ->
-            putStrLn $ "Welcome to Browser-X\n\n" ++
-                    "Usage: browser-x [uri]"
-        -- Start program.
-        [arg]    -> browser arg                     -- entry user input url
-        _        -> browser "http://www.google.com" -- entry default url
+import BrowserX.Network
 
 -- | Internal browser fucntion.
 browser url = do
@@ -43,13 +26,14 @@ browser url = do
     addressBar <- entryNew
 
     -- Create toolbar.
+    home <- actionNew "HOME" "Home" (Just "") (Just stockHome)
     back <- actionNew "BACK" "Back" (Just "") (Just stockGoBack)
     forw <- actionNew "FORW" "Forward" (Just "") (Just stockGoForward)
     relo <- actionNew "RELO" "Reload" (Just "") (Just stockRedo)
     exit <- actionNew "EXIT" "Exit" (Just "") (Just stockQuit)
 
     agr <- actionGroupNew "AGR"
-    mapM_ (\act -> actionGroupAddActionWithAccel agr act Nothing)[back,forw,relo,exit]
+    mapM_ (\act -> actionGroupAddActionWithAccel agr act Nothing)[home,back,forw,relo,exit]
 
     ui <- uiManagerNew
     uiManagerAddUiFromString ui uiDecl
@@ -60,6 +44,7 @@ browser url = do
                     (Just x) -> x
                     Nothing -> error "Cannot get toolbar"
 
+    onActionActivate home (loadView webView addressBar "http://google.com")
     onActionActivate exit (widgetDestroy window)
     onActionActivate back (webViewGoBack webView)
     onActionActivate forw (webViewGoForward webView)
@@ -71,17 +56,13 @@ browser url = do
     -- Load uri.
     do
         let furl = checkProtocol url
-        content <- fetchURL furl      
-        webViewLoadHtmlString webView content furl
-        
-    entrySetText addressBar url
+        loadView webView addressBar furl
     
     -- Open uri when user press `return` at address bar.
     onEntryActivate addressBar $ do
         uri <- entryGetText addressBar               -- get uri from address bar
         let furi = checkProtocol uri
-        content <- fetchURL furi
-        webViewLoadHtmlString webView content furi    -- load new uri
+        loadView webView addressBar furi
         
     -- Add current uri to address bar when load start.
     webView `on` loadStarted $ \frame -> do
@@ -97,8 +78,7 @@ browser url = do
         case newUri of
             Just uri -> do
                 let furi = checkProtocol uri
-                content <- fetchURL furi
-                webViewLoadHtmlString webView content furi
+                loadView webView addressBar furi
             Nothing  -> return ()
         return webView        
 
@@ -114,8 +94,15 @@ browser url = do
 
     mainGUI
 
+loadView webView addressBar url = do
+    content <- fetchURL url
+    entrySetText addressBar url
+    webViewLoadHtmlString webView content url
+
 uiDecl=  "<ui>\
 \           <toolbar>\
+\            <toolitem action=\"HOME\" />\
+\            <separator />\
 \            <toolitem action=\"BACK\" />\
 \            <toolitem action=\"FORW\" />\
 \            <separator />\
@@ -124,16 +111,3 @@ uiDecl=  "<ui>\
 \            <toolitem action=\"EXIT\" />\
 \           </toolbar>\
 \          </ui>"
-
-fetchURL :: String -> IO String
-fetchURL url = do
-    (_,rsp) <- browse $ do
-        setAllowRedirects True
-        request $ getRequest url
-    return(rspBody rsp)
-
-checkProtocol :: String -> String
-checkProtocol url = 
-    case (parseURI url) of
-        Nothing     -> "http://" ++ url
-        Just uri    -> if (uriScheme uri == "http:") then url else error "Protocol not supported"
