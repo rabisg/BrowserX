@@ -36,6 +36,7 @@ data Options = Options
   , optAuth        :: Maybe Authority
   , optProxy       :: Maybe String
   , optPrint       :: PrintOptions
+  , optDebug       :: Bool
   } deriving Show
 
 defaultOptions     = Options
@@ -44,6 +45,7 @@ defaultOptions     = Options
   , optAuth        = Nothing
   , optProxy       = Nothing
   , optPrint       = Both
+  , optDebug       = False
   }
 
 options :: [OptDescr (Options -> Options)]
@@ -51,7 +53,7 @@ options =
  [ Option ['v','?'] ["version"]
      (NoArg (\ opts -> opts { optShowVersion = True }))
      "show version number"
- , Option ['a']     ["auth"]
+ , Option "a"     ["auth"]
      (ReqArg 
       (\ f opts -> let 
         (user,pass') = break (\s -> s==':') f 
@@ -60,17 +62,20 @@ options =
       "username:password")
      "HTTP Basic Authentication"
  , Option []      ["proxy"]
-     (ReqArg (\ f opts -> opts { optProxy = Just f } ) "http://user:pass@example.com:80 | none | AUTO")
+     (ReqArg (\ f opts -> opts { optProxy = Just f } ) "http://example.com:80 | none | AUTO")
      "Proxy"
- , Option ['p']     ["print"]
+ , Option "p"     ["print"]
      (ReqArg (\ f opts -> case head f of
                             'h' -> opts { optPrint = Header }
                             'b' -> opts { optPrint = Body }
                             _   -> opts
               ) "h|b")
      "Output Mode: headers|body. Defaults to BOTH"
- , Option ['h']   ["help"]
+ , Option "h"   ["help"]
      (NoArg  (\ opts -> opts { optShowHelp = True }))
+     "Show help"
+ , Option "d"   ["debug"]
+     (NoArg  (\ opts -> opts { optDebug = True }))
      "Show help"
  ]
 

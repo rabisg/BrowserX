@@ -18,7 +18,14 @@ main = do
   when (optShowVersion settings) $ putStrLn "BrowserX: version: 0.1" >> exitSuccess
   putStrLn $ show settings
   putStrLn $ show params
+  url <- case params of
+  	[] -> return "http://haskell.org"
+  	(x:xs) -> return x
+  when (optDebug settings) $ console url
+  unless (optDebug settings) $ browser url
 
-console :: String -> IO String
-console url = fetchURL url
+console :: String -> IO ()
+console url = do
+	html <- fetchURL url
+	putStrLn html
 
