@@ -1,19 +1,7 @@
-import Data.Char
+module BrowserX.Db(put_cookieDB,get_cookie) where
+
 import Database.HDBC.Sqlite3
 import Database.HDBC
-import Network.HTTP
-import Network.Browser
-
-main = do
-    (rsp, cookies) <- browse $ do
-        rsp <- request $ getRequest "http://google.com/"
-        cookies <- getCookies
-        return (rsp, cookies)
-    put_cookieDB cookies
-    case cookies of 
-		(x:xs) -> do get_cookie x 
-
-    
 
 put_cookieDB [] = return ()
 put_cookieDB (cookie:list) = do
