@@ -26,6 +26,7 @@ main = do
   when (optDebug settings) $ console settings url
   unless (optDebug settings) $ browser settings url
 
+
 console :: Options -> String -> IO ()
 console settings url = do
   html <- fetchURL settings url
