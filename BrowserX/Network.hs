@@ -15,6 +15,8 @@ fetchURL :: String -> IO String
 fetchURL url = do
     (cookies,rsp) <- browse $ do
         setAllowRedirects True
+        --prev_cookies <- get_cookies
+        --setCookies prev_cookies
         (_,rsp) <- request $ getRequest url
         cookies <- getCookies
         addCookies cookies
@@ -46,4 +48,3 @@ printProgress =
         liftIO $ putStrLn $ "Bytes consumed: " ++ show len'
         yield bs
         loop len')
-
