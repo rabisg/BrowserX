@@ -11,6 +11,7 @@ import Network.HTTP.Conduit
 import Data.List.Split
 import BrowserX.Db
 import BrowserX.Options
+import BrowserX.Plugin
 
 fetchURL :: Options -> String -> IO String
 fetchURL settings url = do
@@ -24,7 +25,7 @@ fetchURL settings url = do
         addCookies cookies
         return (cookies,rsp)
     put_cookieDB cookies
-    return(rspBody rsp)
+    plugin "scss" (rspBody rsp)
 
 checkProtocol :: String -> String
 checkProtocol url = 
