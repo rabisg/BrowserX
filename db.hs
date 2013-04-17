@@ -1,7 +1,6 @@
 import Data.Char
 import Database.HDBC.Sqlite3
 import Database.HDBC
-import qualified Data.ByteString.Char8 as B
 import Network.HTTP
 import Network.Browser
 

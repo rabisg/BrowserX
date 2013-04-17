@@ -28,3 +28,5 @@ executable browser-x
                        , conduit
                        , bytestring
                        , transformers
+                       , HDBC
+                       , HDBC-sqlite3
