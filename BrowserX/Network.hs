@@ -17,6 +17,7 @@ fetchURL url = do
         setAllowRedirects True
         (_,rsp) <- request $ getRequest url
         cookies <- getCookies
+        addCookies cookies
         return (cookies,rsp)
     put_cookieDB cookies
     return(rspBody rsp)

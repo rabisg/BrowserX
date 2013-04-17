@@ -1,4 +1,4 @@
-module BrowserX.Db(put_cookieDB,get_cookie) where
+module BrowserX.Db(put_cookieDB,get_cookie,addCookies) where
 
 import Database.HDBC.Sqlite3
 import Database.HDBC
@@ -15,9 +15,14 @@ put_cookieDB (cookie:list) = do
 	put_cookieDB list
  
 
-get_cookie cookie = do
+get_cookies cookie= do
 	putStrLn $ ckName cookie
 	con <- connectSqlite3 "test.db"
 	r <- quickQuery con "SELECT * from cookies where name = ?" [toSql (ckDomain cookie::String)]
 	print r
 	disconnect con
+	
+addCookies [] = return ()
+addCookies (cookie:list) = do
+    addCookie cookie
+    addCookies list
