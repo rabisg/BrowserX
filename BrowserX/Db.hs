@@ -2,6 +2,7 @@ module BrowserX.Db(put_cookieDB,get_cookie) where
 
 import Database.HDBC.Sqlite3
 import Database.HDBC
+import Network.Browser
 
 put_cookieDB [] = return ()
 put_cookieDB (cookie:list) = do
