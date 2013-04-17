@@ -1,13 +1,16 @@
 import System.Process
 import System.Environment
 import System.Exit
+import System.IO
 
 import Control.Monad
 import System.Console.GetOpt
+import Data.Char
 
 import BrowserX.Webkit
 import BrowserX.Network
 import BrowserX.Options
+import BrowserX.Parser
 
  -- | 'main' runs the main program
 main :: IO ()
@@ -19,13 +22,16 @@ main = do
   putStrLn $ show settings
   putStrLn $ show params
   url <- case params of
-  	[] -> return "http://google.com"
-  	(x:xs) -> return x
+    [] -> return "http://google.com"
+    (x:xs) -> return x
   when (optDebug settings) $ console settings url
   unless (optDebug settings) $ browser settings url
 
 console :: Options -> String -> IO ()
 console settings url = do
-	html <- fetchURL settings url
-	putStrLn html
-
+  html <- fetchURL settings url
+  writeFile filePath html
+  parsedHTML <- parseHTML filePath
+  putStrLn parsedHTML
+  where
+    filePath = "/tmp/bro_input.html"
