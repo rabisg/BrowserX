@@ -9,12 +9,17 @@ import Data.Conduit
 import Data.Conduit.Binary as CB
 import Network.HTTP.Conduit
 import Data.List.Split
+import BrowserX.Db
 
 fetchURL :: String -> IO String
 fetchURL url = do
-    (_,rsp) <- browse $ do
+    (cookies,rsp) <- browse $ do
         setAllowRedirects True
-        request $ getRequest url
+        (_,rsp) <- request $ getRequest url
+        cookies <- getCookies
+        addCookies cookies
+        return (cookies,rsp)
+    put_cookieDB cookies
     return(rspBody rsp)
 
 checkProtocol :: String -> String

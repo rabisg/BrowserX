@@ -1,5 +1,9 @@
+module BrowserX.Db(put_cookieDB,get_cookies,addCookies) where
+
+
 import Database.HDBC.Sqlite3
 import Database.HDBC
+import Network.Browser
 
 import Network.HTTP
 import Network.Browser
@@ -25,7 +29,7 @@ put_cookieDB (cookie:list) = do
 	put_cookieDB list
  
 
-get_cookies = do
+get_cookies cookie= do
 	con <- connectSqlite3 "test.db"
 	r <- quickQuery con "SELECT * from cookies" []  		
 	disconnect con
@@ -44,4 +48,9 @@ get_cookie_format (x:xs) = case x of
 					      maybe_version = case fromSql version of 
 								"Nothing" -> Nothing
 								x -> Just x
-				  			   
+				  	
+	
+addCookies [] = return ()
+addCookies (cookie:list) = do
+    addCookie cookie
+    addCookies list
