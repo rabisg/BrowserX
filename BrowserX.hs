@@ -1,7 +1,6 @@
 import System.Process
 import System.Environment
 import System.Exit
-import System.IO
 
 import Control.Monad
 import System.Console.GetOpt
@@ -30,8 +29,5 @@ main = do
 console :: Options -> String -> IO ()
 console settings url = do
   html <- fetchURL settings url
-  writeFile filePath html
-  parsedHTML <- parseHTML filePath
-  putStrLn parsedHTML
-  where
-    filePath = "/tmp/bro_input.html"
+  out <- parseHTML html
+  putStrLn out
