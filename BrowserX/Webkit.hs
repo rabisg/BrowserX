@@ -4,6 +4,8 @@ import Graphics.UI.Gtk
 import Graphics.UI.Gtk.WebKit.WebView
 import Graphics.UI.Gtk.WebKit.WebFrame
 
+import Network.URI
+
 import BrowserX.Network
 
 -- | Internal browser fucntion.
@@ -16,34 +18,62 @@ browser url = do
     
     -- Create WebKit view.
     webView <- webViewNew    
+    webViewSetMaintainsBackForwardList webView True
 
-    -- Create window box.
+    -- Create window boxes.
     winBox <- vBoxNew False 0
+    topBox <- hBoxNew False 0
 
     -- Create address bar.
     addressBar <- entryNew
+
+    -- Create toolbar.
+    back <- actionNew "BACK" "Back" (Just "") (Just stockGoBack)
+    forw <- actionNew "FORW" "Forward" (Just "") (Just stockGoForward)
+    relo <- actionNew "RELO" "Reload" (Just "") (Just stockRedo)
+    exit <- actionNew "EXIT" "Exit" (Just "") (Just stockQuit)
+
+    agr <- actionGroupNew "AGR"
+    mapM_ (\act -> actionGroupAddActionWithAccel agr act Nothing)[back,forw,relo,exit]
+
+    ui <- uiManagerNew
+    uiManagerAddUiFromString ui uiDecl
+    uiManagerInsertActionGroup ui agr 0
+
+    maybeToolbar <- uiManagerGetWidget ui "/ui/toolbar"
+    let toolbar = case maybeToolbar of
+                    (Just x) -> x
+                    Nothing -> error "Cannot get toolbar"
+
+    onActionActivate exit (widgetDestroy window)
+    onActionActivate back (webViewGoBack webView)
+    onActionActivate forw (webViewGoForward webView)
+    onActionActivate relo (webViewReload webView)
 
     -- Create scroll window.
     scrollWin <- scrolledWindowNew Nothing Nothing
     
     -- Load uri.
     do
-        content <- fetchURL url      
-        webViewLoadHtmlString webView content url
+        let furl = checkProtocol url
+        content <- fetchURL furl      
+        webViewLoadHtmlString webView content furl
         
     entrySetText addressBar url
     
     -- Open uri when user press `return` at address bar.
     onEntryActivate addressBar $ do
         uri <- entryGetText addressBar               -- get uri from address bar
-        content <- fetchURL uri
-        webViewLoadHtmlString webView content uri    -- load new uri
+        let furi = checkProtocol uri
+        content <- fetchURL furi
+        webViewLoadHtmlString webView content furi    -- load new uri
         
     -- Add current uri to address bar when load start.
     webView `on` loadStarted $ \frame -> do
         currentUri <- webFrameGetUri frame
         case currentUri of
-            Just uri -> entrySetText addressBar uri
+            Just uri -> let furi = checkProtocol uri in
+                        entrySetText addressBar furi
             Nothing  -> return ()
 
     -- Open all link in current window.
@@ -51,13 +81,16 @@ browser url = do
         newUri <- webFrameGetUri frame
         case newUri of
             Just uri -> do
-                content <- fetchURL uri
-                webViewLoadHtmlString webView content uri
+                let furi = checkProtocol uri
+                content <- fetchURL furi
+                webViewLoadHtmlString webView content furi
             Nothing  -> return ()
         return webView        
 
     -- Connect and show.
-    boxPackStart winBox addressBar PackNatural 0
+    boxPackStart topBox addressBar PackGrow 0
+    boxPackStart topBox toolbar PackGrow 0
+    boxPackStart winBox topBox PackNatural 0
     boxPackStart winBox scrollWin PackGrow 0
     window `containerAdd` winBox
     scrollWin `containerAdd` webView
@@ -65,3 +98,20 @@ browser url = do
     widgetShowAll window
 
     mainGUI
+
+uiDecl=  "<ui>\
+\           <toolbar>\
+\            <toolitem action=\"BACK\" />\
+\            <toolitem action=\"FORW\" />\
+\            <separator />\
+\            <toolitem action=\"RELO\" />\
+\            <separator />\
+\            <toolitem action=\"EXIT\" />\
+\           </toolbar>\
+\          </ui>"
+
+checkProtocol :: String -> String
+checkProtocol url = 
+    case (parseURI url) of
+        Nothing     -> "http://" ++ url
+        Just uri    -> if (uriScheme uri == "http:") then url else error "Protocol not supported"

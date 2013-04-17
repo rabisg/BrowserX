@@ -1,32 +1,31 @@
-#!/usr/bin/env runhaskell
-
-{-# LANGUAGE TemplateHaskell #-}
-
 import System.Process
 import System.Environment
 import System.Exit
 
 import Control.Monad
-
-import HFlags
+import System.Console.GetOpt
 
 import BrowserX.Webkit
 import BrowserX.Network
- 
- -- Defining Flags
-defineFlag "h:help" False "Prints the help text"
-defineFlag "d:debug" False "Renders output on the terminal (No Webkit)"
+import BrowserX.Options
 
  -- | 'main' runs the main program
 main :: IO ()
 main = do
-    _ <- $(initHFlags "Browser-X version: 0.1")
-    when (flags_help) $ exitSuccess
-    if flags_debug == True 
-        then console "http://www.google.com" >>= putStrLn
-        else browser "http://www.google.com"
+  argv <- getArgs
+  (settings, params) <- parse argv
+  when (optShowHelp settings) $ putStrLn (usageInfo "Usage: BrowserX [flags] [METHOD] URL [ITEM [ITEM]]" options) >> exitSuccess
+  when (optShowVersion settings) $ putStrLn "BrowserX: version: 0.1" >> exitSuccess
+  putStrLn $ show settings
+  putStrLn $ show params
+  url <- case params of
+  	[] -> return "http://haskell.org"
+  	(x:xs) -> return x
+  when (optDebug settings) $ console url
+  unless (optDebug settings) $ browser url
 
---
-console :: String -> IO String
-console url = fetchURL url
+console :: String -> IO ()
+console url = do
+	html <- fetchURL url
+	putStrLn html
 
