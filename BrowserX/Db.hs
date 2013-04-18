@@ -1,4 +1,4 @@
-module BrowserX.Db(put_cookieDB,get_cookies,addCookies) where
+module BrowserX.Db(put_cookieDB,get_cookie_format,addCookies) where
 
 
 import Database.HDBC.Sqlite3
@@ -25,12 +25,6 @@ put_cookieDB (cookie:list) = do
 	commit con
 	disconnect con
 	put_cookieDB list
-
-get_cookies = do
-	con <- connectSqlite3 "test.db"
-	r <- quickQuery con "SELECT * from cookies" []  		
-	disconnect con
-	return $ get_cookie_format r
 
 get_cookie_format :: [[SqlValue]] -> [Cookie]
 get_cookie_format [] = [] 
