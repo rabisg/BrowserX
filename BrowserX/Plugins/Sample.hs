@@ -4,4 +4,4 @@ import Text.XML.HXT.Core
 import Text.HandsomeSoup
 
 hook_scss :: String -> String
-hook_scss html = html ++ "\n\n ***********I'm inside the plugin************\n\n"
+hook_scss html = html ++ "<div> FOOTER: Inside Plugin </div>"
